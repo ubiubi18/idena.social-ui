@@ -181,7 +181,7 @@ function App() {
         if (ads.length) {
             setCurrentAd(ads[0]);
 
-            let rotateAdsIntervalId: any;
+            let rotateAdsIntervalId: NodeJS.Timeout;
 
             async function recurse() {
                 rotateAdsIntervalId = setTimeout(() => {
@@ -237,7 +237,7 @@ function App() {
         if (initialBlock) {
             setScanningPastBlocks(true);
 
-            let recurseForwardIntervalId: any;
+            let recurseForwardIntervalId: NodeJS.Timeout;
 
             (async function recurseForward() {
                 recurseForwardIntervalId = setTimeout(postScannerFactory(true, recurseForward, currentBlockCapturedRef, setCurrentBlockCaptured), POLLING_INTERVAL);
@@ -249,7 +249,7 @@ function App() {
 
     useEffect(() => {
         if (scanningPastBlocks) {
-            let recurseBackwardIntervalId: any;
+            let recurseBackwardIntervalId: NodeJS.Timeout;
 
             const timeNow = Math.floor(Date.now() / 1000);
             const ttl = timeNow + SCAN_POSTS_TTL;
@@ -284,7 +284,7 @@ function App() {
     }, [posts]);
 
     useEffect(() => {
-        let intervalSubmittingPost: any;
+        let intervalSubmittingPost: NodeJS.Timeout;
 
         if (submittingPost) {
             intervalSubmittingPost = setTimeout(() => {
@@ -298,7 +298,7 @@ function App() {
     }, [submittingPost]);
 
     useEffect(() => {
-        let intervalPostDelayMessage: any;
+        let intervalPostDelayMessage: NodeJS.Timeout;
 
         if (submittingPost) {
             setPostDelayMessage(true);
@@ -370,7 +370,7 @@ function App() {
         }
     };
 
-    const handleUseRpcToggle = (event: any) => {
+    const handleUseRpcToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
         const useRpc = (event.target.value === 'true');
         setInputUseRpc(useRpc);
 
@@ -390,7 +390,7 @@ function App() {
         }
     };
 
-    const handleUseFindPastBlocksWithTxsApiToggle = (event: any) => {
+    const handleUseFindPastBlocksWithTxsApiToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
         const useFindPastBlocksWithTxsApi = event.target.checked;
         setUseFindPastBlocksWithTxsApi(useFindPastBlocksWithTxsApi);
 
@@ -408,7 +408,7 @@ function App() {
         }
     };
 
-    const postScannerFactory = (recurseForward: boolean, recurse: any, blockCapturedRef: any, setBlockCaptured: any) => {
+    const postScannerFactory = (recurseForward: boolean, recurse: (time: number) => Promise<void>, blockCapturedRef: React.RefObject<number>, setBlockCaptured: React.Dispatch<React.SetStateAction<number>>) => {
         return async function postFinder() {
             try {
                 let pendingBlock;
