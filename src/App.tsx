@@ -7,7 +7,7 @@ import {
     transactionType,
 } from 'idena-sdk-js-lite';
 import { IdenaApprovedAds, type ApprovedAd } from 'idena-approved-ads';
-import { getMaxFee, getPastBlocksWithTxs, getRpcClient, type RpcClient } from './logic/api';
+import { getMaxFee, getPastBlocksWithTxs, getRecurseBackwardPendingBlock, getRpcClient, type RpcClient } from './logic/api';
 import { calculateMaxFee, getDisplayAddress, getDisplayDateTime, getMessageLines, hex2str, sanitizeStr } from './logic/utils';
 import WhatIsIdenaPng from './assets/whatisidena.png';
 
@@ -415,43 +415,16 @@ function App() {
                 if (recurseForward) {
                     pendingBlock = blockCapturedRef.current ? blockCapturedRef.current + 1 : initialBlock;
                 } else {
-                    const nextPastBlock = blockCapturedRef.current ? blockCapturedRef.current - 1 : undefined;
-
-                    if (!nextPastBlock) {
-                        pendingBlock = initialBlock - 1;
-                    } else if (useFindPastBlocksWithTxsApiRef.current && !findPastBlocksUrlInvalidRef.current) {
-                        const noPastBlocksWithTxsGathered = !pastBlocksWithTxsRef.current.length;
-                        const pastBlocksAlreadyProcessed = (pastBlocksWithTxsRef.current[0] > nextPastBlock) && (pastBlocksWithTxsRef.current[pastBlocksWithTxsRef.current.length - 1] > nextPastBlock);
-                        const pastBlocksInRangeForNextBlock = (pastBlocksWithTxsRef.current[0] > nextPastBlock) && (pastBlocksWithTxsRef.current[pastBlocksWithTxsRef.current.length - 1] < nextPastBlock);
-
-                        if (noPastBlocksWithTxsGathered || pastBlocksAlreadyProcessed) {
-                            const { initialblockNumber, blocksWithTxs = [] } = await getPastBlocksWithTxs(findPastBlocksUrlRef.current, nextPastBlock);
-                            setPastBlocksWithTxs(blocksWithTxs);
-
-                            if (!blocksWithTxs[0]) {
-                                throw 'no more blocks';
-                            }
-
-                            if (nextPastBlock > initialblockNumber) {
-                                pendingBlock = nextPastBlock;
-                            } else {
-                                pendingBlock = blocksWithTxs[0];
-                            }
-                        
-                        } else if (pastBlocksInRangeForNextBlock) {
-                            const insertionIndex = pastBlocksWithTxsRef.current.findIndex(currentItem => currentItem <= nextPastBlock);
-                            const finalIndex = insertionIndex === -1 ? pastBlocksWithTxsRef.current.length : insertionIndex;
-                            pendingBlock = pastBlocksWithTxsRef.current[finalIndex];
-                        } else {
-                            pendingBlock = nextPastBlock;
-                        }
-                    } else {
-                        pendingBlock = nextPastBlock;
-                    }
-
-                    if (pendingBlock <= firstBlock) {
-                        throw 'no more blocks';
-                    }
+                    pendingBlock = await getRecurseBackwardPendingBlock(
+                        initialBlock,
+                        firstBlock,
+                        blockCapturedRef,
+                        useFindPastBlocksWithTxsApiRef,
+                        findPastBlocksUrlInvalidRef,
+                        pastBlocksWithTxsRef,
+                        findPastBlocksUrlRef,
+                        setPastBlocksWithTxs,
+                    );
                 }
 
                 const { result: getBlockByHeightResult } = await rpcClientRef.current('bcn_blockAt', [pendingBlock]);
