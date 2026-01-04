@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FocusEventHandler } from 'react';
 import { IdenaApprovedAds, type ApprovedAd } from 'idena-approved-ads';
-import { getNewPostersAndPosts, getRecurseBackwardPendingBlock, getChildPostIds, submitPost, type Post, type Poster, type PastBlocksWithTxsGathered } from './logic/asyncUtils';
+import { getNewPostersAndPosts, getRecurseBackwardPendingBlock, getChildPostIds, submitPost, type Post, type Poster, type PastBlocksWithTxsGathered, breakingChanges } from './logic/asyncUtils';
 import { getPastBlocksWithTxs, getRpcClient, type RpcClient } from './logic/api';
-import { getDisplayAddress, getDisplayDateTime, getMessageLines } from './logic/utils';
+import { decimalToHex, getDisplayAddress, getDisplayDateTime, getMessageLines } from './logic/utils';
 import WhatIsIdenaPng from './assets/whatisidena.png';
 
 const idenaNodeUrl = 'https://restricted.idena.io';
@@ -317,14 +317,18 @@ function App() {
             return;
         }
 
-        const replyToPostId = postId !== 'main' ? postId : null;
+        let replyToPostId = postId !== 'main' ? postId : null;
 
         if (replyToPostId) {
             postTextareaElement.rows = 1;
+
+            if (currentBlockCaptured < breakingChanges.replyToPostIdFormat) {
+                replyToPostId = decimalToHex(postId, 16);
+            }
         }
 
         setSubmittingPost(postId);
-        await submitPost(postersAddress, contractAddress, makePostMethod, inputText, replyToPostId, inputUseRpc, rpcClient, callbackUrl);;
+        await submitPost(postersAddress, contractAddress, makePostMethod, inputText, replyToPostId, inputUseRpc, rpcClient, callbackUrl);
     };
 
     const handleUseRpcToggle = (event: React.ChangeEvent<HTMLInputElement>) => {

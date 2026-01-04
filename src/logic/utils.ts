@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { hexToUint8Array } from "idena-sdk-js-lite";
+import { hexToUint8Array, toHexString } from "idena-sdk-js-lite";
 
 export function getDisplayAddress(address: string) {
     return `${address.slice(0, 7)}...${address.slice(-5)}`;
@@ -46,4 +46,45 @@ export function hex2str(hex: string) {
 
 export function sanitizeStr(str: string) {
     return new DOMParser().parseFromString(str, 'text/html').body.textContent || '';
+}
+
+export function rmZeros(str: string) {
+    return str.replaceAll(/[.0]+$/g, '');
+}
+
+export function numToUint8Array(num: number, uint8ArrayLength: number) {
+  let arr = new Uint8Array(uint8ArrayLength);
+
+  for (let i = 0; i < 8; i++) {
+    arr[i] = num % 256;
+    num = Math.floor(num / 256);
+  }
+
+  return arr;
+}
+
+export function hexToDecimal(hex: string) {
+    if (!hex) return hex;
+
+    const uint8ArrayLength = hexToUint8Array(hex).length;
+    let rmZerosHex = rmZeros(hex);
+    let decimalVal;
+    let index = 0;
+    let testHex;
+
+    do {
+        if (index > 20) return 'unrecognized';
+        if (index !== 0) rmZerosHex += '0';
+
+        decimalVal = Number(rmZerosHex);
+        testHex = toHexString(numToUint8Array(decimalVal, uint8ArrayLength));
+
+        index++;
+    } while (testHex !== hex);
+
+    return decimalVal.toString();
+}
+
+export function decimalToHex(dec: string, uint8ArrayLength: number) {
+    return toHexString(numToUint8Array(Number(dec), uint8ArrayLength));
 }
