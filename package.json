@@ -2,6 +2,10 @@
 	"name": "idena.social-ui",
 	"version": "10.4.3",
 	"type": "module",
+	"engines": {
+		"node": ">=24.18.0 <25",
+		"npm": ">=11.16.0"
+	},
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
@@ -17,13 +21,18 @@
 		"bn.js": "^5.2.2",
 		"decimal.js": "^10.6.0",
 		"idena-approved-ads": "^1.0.0",
-		"idena-sdk-js-lite": "^0.1.0",
+		"idena-sdk-js-lite": "https://github.com/ubiubi18/idena-sdk-js-lite/archive/cc6e69b9b87aa381398b7839050a4640f46eb5ba.tar.gz",
 		"js-sha3": "^0.9.3",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
 		"react-modal": "^3.16.3",
 		"react-router": "^7.13.0",
 		"tailwindcss": "^4.1.17"
+	},
+	"overrides": {
+		"idena-approved-ads": {
+			"idena-sdk-js-lite": "$idena-sdk-js-lite"
+		}
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.39.1",
